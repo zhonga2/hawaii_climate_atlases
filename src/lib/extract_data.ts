@@ -26,6 +26,12 @@ const IN_GRIDS_FILE_URL = new URL('https://atlas.uhtapis.org/rainfall/assets/fil
 const MM_GRIDS_FILE_NAME = 'StateASCIIGrids_mm.zip';
 const MM_GRIDS_FILE_URL = new URL('https://atlas.uhtapis.org/rainfall/assets/files/GISLayers/StateASCIIGrids_mm.zip');
 
+const IN_UNCERTAINTY_GRIDS_FILE_NAME = 'UncertaintyASCIIGrids_inches.zip';
+const IN_UNCERTAINTY_GRIDS_FILE_URL = new URL('https://atlas.uhtapis.org/rainfall/assets/files/GISLayers/UncertaintyASCIIGrids_inches.zip');
+
+const MM_UNCERTAINTY_GRIDS_FILE_NAME = 'UncertaintyASCIIGrids_mm.zip';
+const MM_UNCERTAINTY_GRIDS_FILE_URL = new URL('https://atlas.uhtapis.org/rainfall/assets/files/GISLayers/UncertaintyASCIIGrids_mm.zip');
+
 export async function getStations({
   other
 }: {
@@ -103,6 +109,35 @@ export async function getIsohyets({
     geojson.forEach(g => delete g.fileName);
   }
   return geojson;
+}
+
+export async function getUncertaintyGrids({
+  units,
+  period,
+}: {
+  units: Units,
+  period: Period
+}) {
+  let fileName, fetchUrl;
+  if (units === Units.IN) {
+    fileName = IN_UNCERTAINTY_GRIDS_FILE_NAME;
+    fetchUrl = IN_UNCERTAINTY_GRIDS_FILE_URL;
+  } else if (units === Units.MM) {
+    fileName = MM_UNCERTAINTY_GRIDS_FILE_NAME;
+    fetchUrl = MM_UNCERTAINTY_GRIDS_FILE_URL;
+  } else {
+    return null;
+  }
+
+  const gridsFileBuffer: Buffer | null = await getCachedFileBuffer(fetchUrl, CACHE_PATH, fileName);
+  if (!gridsFileBuffer) {
+    return null;
+  }
+
+  const asciiGrids: AsciiGrid = await JSZip.loadAsync(gridsFileBuffer)
+    .then(asciiZip => fetchAsciiGridData(asciiZip, period));
+
+  return asciiGrids;
 }
 
 export async function getGrids({
