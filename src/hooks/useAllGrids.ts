@@ -8,21 +8,10 @@ export default function useAllGrids(selectedUnits: Units) {
     error: Error | undefined
   };
 
-  const results: GridFetchResult[] = [
-    useGrids(selectedUnits, Period[0]),
-    useGrids(selectedUnits, Period[1]),
-    useGrids(selectedUnits, Period[2]),
-    useGrids(selectedUnits, Period[3]),
-    useGrids(selectedUnits, Period[4]),
-    useGrids(selectedUnits, Period[5]),
-    useGrids(selectedUnits, Period[6]),
-    useGrids(selectedUnits, Period[7]),
-    useGrids(selectedUnits, Period[8]),
-    useGrids(selectedUnits, Period[9]),
-    useGrids(selectedUnits, Period[10]),
-    useGrids(selectedUnits, Period[11]),
-    useGrids(selectedUnits, Period[12]),
-  ];
+  const results: GridFetchResult[] = [];
+  for (let i = 0; i <= 12; i++) {
+    results.push(useGrids(selectedUnits, Period[i]));
+  }
 
   const asciiGrids: AsciiGrid[] = results.flatMap(r => r.asciiGrid ? [r.asciiGrid] : []);
   
