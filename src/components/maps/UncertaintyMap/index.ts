@@ -1,2 +1,2 @@
 export { default } from "./UncertaintyMap";
-export * from "./uncertaintyColorLayer";
+export * from "./UncertaintyColorLayer";

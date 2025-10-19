@@ -11,7 +11,7 @@ import SideBar from "@/components/SideBar";
 import { GeoJSON, Popup, TileLayer, useMap, useMapEvent, Marker } from "react-leaflet";
 import L, { LatLng, LatLngBounds } from "leaflet";
 import MapOverlay from "@/components/leaflet-controls/MapOverlay";
-import { UncertaintyColorLayer } from "./uncertaintyColorLayer";
+import { UncertaintyColorLayer } from "./UncertaintyColorLayer";
 import { Feature, FeatureCollection } from "geojson";
 
 import { renderToStaticMarkup } from "react-dom/server";

@@ -33,7 +33,7 @@ const UncertaintyMap = dynamic(
 );
 
 const ClientInteractiveMap = () => {
-  useRequiredConditionsOfUse();
+  //useRequiredConditionsOfUse();
   return (
     // UH Manoa coordinates: 21.297, -157.817
     //<RainfallMap />

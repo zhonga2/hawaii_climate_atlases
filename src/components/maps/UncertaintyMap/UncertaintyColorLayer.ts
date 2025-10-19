@@ -37,13 +37,18 @@ function geoPosToColor(asciiGrid: AsciiGrid, geoPos: LatLng, colorScale: ColorSc
   // Find LatLng location in the ASCII file to grab its corresponding rainfall level
   const x = Math.floor(offset.lng / cellsize);
   const y = Math.floor(nrows - offset.lat / cellsize);
-  const xValid: boolean = x >= 0 && x < ncols;
-  const yValid = y >= 0 && y < nrows;
-  if (!xValid || !yValid) { // default to transparent
-      return color;
-  }
+
+  // Check if the coordinates are within the grid range
+  if (x < 0 || x >= ncols || y < 0 || y >= nrows) return color;
+
   const asciiGridLoc = ncols * y + x;
   const colorValue = asciiGrid.values[asciiGridLoc];
+
+  // Handle no data values
+  const nodata = (asciiGrid as any)?.header?.NODATA_value ?? (asciiGrid as any)?.header?.nodata;
+  if (!Number.isFinite(colorValue) || (nodata !== undefined && colorValue === nodata)) {
+    return { r: 0, g: 0, b: 0, a: 0 }; // transparent
+  }
 
   // Using the file location/index, find the color that colorValue is mapped to
   const { colors, range } = colorScale;
@@ -54,7 +59,7 @@ function geoPosToColor(asciiGrid: AsciiGrid, geoPos: LatLng, colorScale: ColorSc
   let actualPosition = Math.round(scale * (colors.length - 1));
 
   return colors[actualPosition];
-}
+}  
 
 R.GridLayer.RasterLayer = L.GridLayer.extend({
   initialize: function(options: RasterOptions) {
@@ -84,38 +89,78 @@ R.GridLayer.RasterLayer = L.GridLayer.extend({
     this.redraw();
   },
 
-  setColorScale: function() {
-    let colors: Color[] = [];
+  
+  // setColorScale: function() {
+  //   let colors: Color[] = [];
     
-    // uncertainty chart for now
-    const colorScheme = ['slategray', 'olivedrab', 'saddlebrown', 'steelblue', 'darkkhaki', 'lightcoral'];
+  //   // uncertainty chart for now
+  //   const colorScheme = ['red', 'yellow', 'green', 'blue', 'purple', 'indigo'];
 
-    const range = this.options.colorScale.range;
+  //   const range = this.options.colorScale.range;
+  //   const colorScale = chroma.scale(colorScheme).domain(range);
 
-    const colorScale = chroma.scale(colorScheme).domain(range);
 
-    let span = range[1] - range[0];
-    let interval = span / 500; // 500 = numColors
-    let value: number;
-    let i: number;
-    for(i = 0, value = range[0]; i < 500; i++, value += interval) {
-      let color: Color = {r: 0, g: 0, b: 0, a: 0};
-      let channels = colorScale(value);
-      let [r, g, b, a] = channels.rgba();
-      color.r = Math.round(r);
-      color.g = Math.round(g);
-      color.b = Math.round(b);
-      color.a = Math.round(((a * 255) / 2) + 30);
-      colors.push(color);
-    }
+  //   let span = range[1] - range[0];
+  //   let numColors = 500; // number of colors in the scale
+  //   let interval = span / numColors;
 
-    this.options.colorScale = {
-      colors,
-      range, 
-    };
+  //   let value: number;
+  //   let i: number;
+  //   for(i = 0, value = range[0]; i < numColors; i++, value += interval) {
+  //     let color: Color = {r: 0, g: 0, b: 0, a: 0};
+  //     let channels = colorScale(value);
+  //     let [r, g, b, a] = channels.rgba();
+  //     color.r = Math.round(r);
+  //     color.g = Math.round(g);
+  //     color.b = Math.round(b);
+  //     color.a = Math.round(((a * 255) / 2) + 30);
+  //     colors.push(color);
+  //   }
 
-    this.redraw();
-  },
+  //   this.options.colorScale = {
+  //     colors,
+  //     range, 
+  //   };
+
+  //   this.redraw();
+  // }, 
+
+ //NEW COLOR SCALE SETTING
+ setColorScale: function () {
+  let colors: Color[] = [];
+
+  // White to red color scheme (low variance = light; high variance = dark)
+  const redColorScheme = ['#f0f0f0', '#fcbba1', '#fc9272', '#fb6a4a', '#de2d26', '#a50f15'];
+
+  // Use the provided range
+  const range = this.options.colorScale?.range?? [0,1];
+  console.log("Color scale range:", range);
+  const NUM_COLORS = 256;
+
+  // Build a LUT from the ramp over your range
+  const colorScale = chroma.scale(redColorScheme).domain(range);
+  const step = (range[1] - range[0]) / NUM_COLORS; // Calculates the max value - min value range divided by the number of colors
+
+
+  for(let i = 0; i < NUM_COLORS; i++) {
+    const value = range[0] + i * step;
+
+  // Work around @types/chroma-js: cast to any so .rgba() is callable on the scale result
+  const channels = (colorScale(value) as any).rgba();
+  const [r, g, b, a01] = channels;
+    colors.push({
+      r: Math.round(r),
+      g: Math.round(g),
+      b: Math.round(b),
+      a: Math.round((a01 ?? 1) * 255)
+    });
+    //color.a = Math.round(((a * 255) / 2) + 30);
+  }
+
+  this.options.colorScale = { colors, range };
+  this.redraw();
+},
+
 
   createTile: function(coords: any) {
     let coordString = JSON.stringify(coords);
@@ -148,7 +193,7 @@ R.GridLayer.RasterLayer = L.GridLayer.extend({
           let color = geoPosToColor(this.options.asciiGrid, latlng, this.options.colorScale);
           if(color != undefined) {
             hasValue = true;
-            imgData.data[colorOff] = color.r;
+            imgData.data[colorOff + 0] = color.r;
             imgData.data[colorOff + 1] = color.g;
             imgData.data[colorOff + 2] = color.b;
             imgData.data[colorOff + 3] = color.a;
