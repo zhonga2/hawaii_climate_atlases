@@ -19,12 +19,25 @@ const RainfallMap = dynamic(
   }
 );
 
+const UncertaintyMap = dynamic(
+  () => import("@/components/maps/UncertaintyMap"),
+  {
+    ssr: false,
+    loading: () => {
+      return <div style={{padding: "20px"}} className="text-center">
+        <p style={{padding: "10px"}}>Loading Map</p>
+        <GridLoader/>
+      </div>
+    }
+  }
+);
 
 const ClientInteractiveMap = () => {
   useRequiredConditionsOfUse();
   return (
     // UH Manoa coordinates: 21.297, -157.817
-    <RainfallMap />
+    //<RainfallMap />
+    <UncertaintyMap />
   );
 }
 
