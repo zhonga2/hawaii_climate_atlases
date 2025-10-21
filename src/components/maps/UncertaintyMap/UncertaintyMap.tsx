@@ -13,7 +13,6 @@ import L, { LatLng, LatLngBounds } from "leaflet";
 import MapOverlay from "@/components/leaflet-controls/MapOverlay";
 import { UncertaintyColorLayer } from "./UncertaintyColorLayer";
 import { Feature, FeatureCollection } from "geojson";
-
 import { renderToStaticMarkup } from "react-dom/server";
 import useAllUncertaintyGrids from "@/hooks/useAllUncertaintyGrids";
 import useUncertaintyData from "@/hooks/useUncertaintyData";

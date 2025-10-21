@@ -72,7 +72,7 @@ const IsohyetLabels = ({
   );
 };
 
-const IsohyetsLayer = (
+export const IsohyetsLayer = (
   {
     geojson,
   }: {

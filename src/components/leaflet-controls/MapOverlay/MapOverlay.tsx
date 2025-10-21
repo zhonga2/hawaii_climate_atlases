@@ -229,7 +229,6 @@ const MapOverlay: React.FC<Props> = (
 
   // For menu and options/fields behavior
   const [showMenu, setShowMenu] = useState<boolean>(true);
-  const [uncertainty, setUncertainty] = useState<boolean>(false);
   const [basemapListOpen, setBasemapListOpen] = useState(false);
   const [periodListOpen, setPeriodListOpen] = useState(false);
 
@@ -431,7 +430,7 @@ const MapOverlay: React.FC<Props> = (
                           onValueChange={() => {
                             setShowGrids(!showGrids);
                             if (showUncertainty) {
-                              setUncertainty(!showUncertainty);
+                              setShowUncertainty(!showUncertainty);
                             }
                           }}
                           isSelected={showGrids}
