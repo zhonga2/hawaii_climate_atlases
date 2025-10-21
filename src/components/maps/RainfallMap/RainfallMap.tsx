@@ -20,6 +20,9 @@ import useAllGrids from "@/hooks/useAllGrids";
 import useRainfallData from "@/hooks/useRainfallData";
 import { defaultSettings } from "@/constants";
 import { GridLoader } from "react-spinners";
+import useUncertaintyData from "@/hooks/useUncertaintyData";
+import useAllUncertaintyGrids from "@/hooks/useAllUncertaintyGrids";
+import { UncertaintyColorLayer } from "../UncertaintyMap/UncertaintyColorLayer";
 
 
 const IsohyetLabels = ({
@@ -98,7 +101,7 @@ export const IsohyetsLayer = (
   );
 }
 
-const PopupOnClick = (
+export const PopupOnClick = (
   {
     isLoading,
     selectedUnits,
@@ -266,7 +269,7 @@ function createStationMarker(station: Station, zoom: number, other?: boolean): L
   });
 }
 
-const StationIcons = ({
+export const StationIcons = ({
   stations,
   other,
   handleClickStation,
@@ -414,6 +417,7 @@ const RainfallMap = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<Period>(defaultSettings.selectedPeriod);
   const [showIsohyets, setShowIsohyets] = useState<boolean>(defaultSettings.showIsohyets);
   const [showGrids, setShowGrids] = useState<boolean>(defaultSettings.showGrids);
+  const [showUncertainty, setShowUncertainty] = useState<boolean>(false);
   const [showRFStations, setShowRFStations] = useState<boolean>(defaultSettings.showRFStations);
   const [showOtherStations, setShowOtherStations] = useState<boolean>(defaultSettings.showOtherStations);
   const [selectedStationIsOther, setSelectedStationIsOther] = useState<boolean>(false);
@@ -430,14 +434,29 @@ const RainfallMap = () => {
     otherStations,
     featureCollections,
     asciiGrid,
-    allDataLoaded,
-    isLoading,
+    allDataLoaded: rainfallDataLoaded,
+    isLoading: rainfallIsLoading,
   } = useRainfallData(selectedUnits, selectedPeriod);
 
   const {
     asciiGrids,
-    gridsAreLoading
+    gridsAreLoading: rainfallGridsAreLoading
   } = useAllGrids(selectedUnits);
+
+  const {
+    asciiGrid: uncertaintyGrid,
+    allDataLoaded: uncertaintyDataLoaded,
+    isLoading: uncertaintyIsLoading,
+  } = useUncertaintyData(selectedUnits, selectedPeriod);
+
+  const {
+    asciiGrids: uncertaintyGrids,
+    gridsAreLoading: uncertaintyGridsAreLoading
+  } = useAllUncertaintyGrids(selectedUnits);
+
+  const isLoading = rainfallIsLoading || uncertaintyIsLoading;
+  const gridsAreLoading = rainfallGridsAreLoading || uncertaintyGridsAreLoading;
+  const allDataLoaded = rainfallDataLoaded && uncertaintyDataLoaded;
 
   const ranges_IN: [number, number][] = [
     [0.8, 32.2],
@@ -454,6 +473,9 @@ const RainfallMap = () => {
     [0.6, 36.4],
     [8, 404.4]
   ];
+
+  const uncertainty_ranges_IN: [number, number][] = ranges_IN;
+
   const ranges_MM: [number, number][] = [
     [21, 818],
     [11, 669],
@@ -470,7 +492,9 @@ const RainfallMap = () => {
     [204, 10271]
   ];
 
-  const colorLayer = useMemo(() => {
+  const uncertainty_ranges_MM: [number, number][] = ranges_MM;
+
+  const rainfallColorLayer = useMemo(() => {
     return asciiGrid ? (
       <RainfallColorLayer
         key={`color-layer-${selectedUnits}-${selectedPeriod}`}
@@ -486,6 +510,24 @@ const RainfallMap = () => {
     ) : null;
     // eslint-disable-next-line
   }, [asciiGrid]);
+
+  const uncertaintyColorLayer = useMemo(() => {
+    return uncertaintyGrid ? (
+      <UncertaintyColorLayer
+        key={`color-layer-${selectedUnits}-${selectedPeriod}`}
+        options={{
+          cacheEmpty: true,
+          colorScale: {
+            colors: [],
+            range: selectedUnits == Units.IN ? ranges_IN[selectedPeriod] : ranges_MM[selectedPeriod],
+          },
+          uncertaintyGrid,   // Problem with passing uncertaintyGrid here, so use asciiGrid instead
+        }}
+      />
+    ) : null;
+    // eslint-disable-next-line
+  }, [uncertaintyGrid]);
+
   const rfStationIcons = useMemo(() => {
     return rfStations ? (
       <StationIcons
@@ -563,7 +605,8 @@ const RainfallMap = () => {
             maxZoom={tileLayerProps.maxZoom ?? 13}
           />
 
-          {showGrids && colorLayer}
+          {showGrids && rainfallColorLayer}
+          {showUncertainty && rainfallColorLayer} //CHANGE THIS
 
           {rfStationIcons}
 
@@ -598,6 +641,8 @@ const RainfallMap = () => {
             setTileLayerProps={setTileLayerProps}
             showGrids={showGrids}
             setShowGrids={setShowGrids}
+            showUncertainty={showUncertainty}
+            setShowUncertainty={setShowUncertainty}
             isLoading={isLoading}
             gridsAreLoading={gridsAreLoading}
             minimap={true}

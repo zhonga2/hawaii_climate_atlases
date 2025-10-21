@@ -36,8 +36,8 @@ const ClientInteractiveMap = () => {
   //useRequiredConditionsOfUse();
   return (
     // UH Manoa coordinates: 21.297, -157.817
-    //<RainfallMap />
-    <UncertaintyMap />
+    <RainfallMap />
+    //<UncertaintyMap />
   );
 }
 
