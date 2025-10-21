@@ -134,6 +134,7 @@ const UncertaintyMap = () => {
   const [selectedUnits, setSelectedUnits] = useState<Units>(defaultSettings.selectedUnits);
   const [selectedPeriod, setSelectedPeriod] = useState<Period>(defaultSettings.selectedPeriod);
   const [showGrids, setShowGrids] = useState<boolean>(defaultSettings.showGrids);
+  const [showUncertainty, setShowUncertainty] = useState<boolean>(false);
   const [selectedGridIndex, setSelectedGridIndex] = useState<number>(-1); // -1 = default val or non-grid loc
   const [location, setLocation] = useState<LatLng | null>(null);
   const [tileLayerProps, setTileLayerProps] = useState<TileLayerProps>({
@@ -242,7 +243,7 @@ const UncertaintyMap = () => {
             maxZoom={tileLayerProps.maxZoom ?? 13}
           />
 
-          {showGrids && colorLayer}
+          {showUncertainty && colorLayer}
 
           {asciiGrid && <PopupOnClick
             isLoading={isLoading}
@@ -263,6 +264,8 @@ const UncertaintyMap = () => {
             setTileLayerProps={setTileLayerProps}
             showGrids={showGrids}
             setShowGrids={setShowGrids}
+            showUncertainty={showUncertainty}
+            setShowUncertainty={setShowUncertainty}
             isLoading={isLoading}
             gridsAreLoading={gridsAreLoading}
             minimap={true}

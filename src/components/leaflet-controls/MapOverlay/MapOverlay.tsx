@@ -171,6 +171,8 @@ interface Props {
   setTileLayerProps: (props: TileLayerProps) => void,
   showGrids: boolean,
   setShowGrids: (show: boolean) => void,
+  showUncertainty: boolean,
+  setShowUncertainty: (show: boolean) => void,
   isLoading: boolean,
   gridsAreLoading: boolean,
   minimap: boolean,
@@ -192,6 +194,8 @@ const MapOverlay: React.FC<Props> = (
     setTileLayerProps,
     showGrids,
     setShowGrids,
+    showUncertainty,
+    setShowUncertainty,
     isLoading,
     gridsAreLoading,
     minimap
@@ -426,8 +430,8 @@ const MapOverlay: React.FC<Props> = (
                           value="Rainfall"
                           onValueChange={() => {
                             setShowGrids(!showGrids);
-                            if (uncertainty) {
-                              setUncertainty(!uncertainty);
+                            if (showUncertainty) {
+                              setUncertainty(!showUncertainty);
                             }
                           }}
                           isSelected={showGrids}
@@ -437,12 +441,12 @@ const MapOverlay: React.FC<Props> = (
                         <Checkbox
                           value="Uncertainty"
                           onValueChange={() => {
-                            setUncertainty(!uncertainty);
+                            setShowUncertainty(!showUncertainty);
                             if (showGrids) {
                               setShowGrids(!showGrids);
                             }
                           }}
-                          isSelected={uncertainty}
+                          isSelected={showUncertainty}
                         >
                           Uncertainty
                         </Checkbox>

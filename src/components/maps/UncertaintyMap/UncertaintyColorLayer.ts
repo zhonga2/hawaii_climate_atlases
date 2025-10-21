@@ -130,11 +130,10 @@ R.GridLayer.RasterLayer = L.GridLayer.extend({
   let colors: Color[] = [];
 
   // White to red color scheme (low variance = light; high variance = dark)
-  const redColorScheme = ['#f0f0f0', '#fcbba1', '#fc9272', '#fb6a4a', '#de2d26', '#a50f15'];
+  const redColorScheme = ['#fee5d9', '#fcbba1', '#fc9272', '#fb6a4a', '#de2d26', '#a50f15']
 
   // Use the provided range
   const range = this.options.colorScale?.range?? [0,1];
-  console.log("Color scale range:", range);
   const NUM_COLORS = 256;
 
   // Build a LUT from the ramp over your range
