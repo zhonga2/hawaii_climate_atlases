@@ -1,11 +1,11 @@
-import { useGrids } from "@/hooks/useGrids";
+import { useUncertaintyGrids } from "@/hooks/useUncertaintyGrids";
 import { Units, Period } from "@/lib";
 
 export default function useUncertaintyData(selectedUnits: Units, selectedPeriod: Period) {
   const {
     asciiGrid,
     isLoading: gridsLoading,
-  } = useGrids(selectedUnits, Period[selectedPeriod]);
+  } = useUncertaintyGrids(selectedUnits, Period[selectedPeriod]);
   const allDataLoaded =
     !!asciiGrid;
   const isLoading =
