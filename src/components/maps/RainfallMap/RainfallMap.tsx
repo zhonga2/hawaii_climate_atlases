@@ -17,6 +17,8 @@ import { Feature, FeatureCollection } from "geojson";
 // Import layer definitions to register them with Leaflet (side effects needed)
 import "./RainfallColorLayer";
 import "../UncertaintyMap/UncertaintyColorLayer";
+import { RainfallColorLayer } from "./RainfallColorLayer";
+import { UncertaintyColorLayer } from "../UncertaintyMap/UncertaintyColorLayer";
 
 import { renderToStaticMarkup } from "react-dom/server";
 import useAllGrids from "@/hooks/useAllGrids";
@@ -460,18 +462,6 @@ const RainfallMap = () => {
   const gridsAreLoading = rainfallGridsAreLoading || uncertaintyGridsAreLoading;
   const allDataLoaded = rainfallDataLoaded && uncertaintyDataLoaded;
 
-  // Debug logging
-  console.log('Map State:', {
-    showGrids,
-    showUncertainty,
-    hasRainfallGrid: !!asciiGrid,
-    hasUncertaintyGrid: !!uncertaintyGrid,
-    rainfallDataLoaded,
-    uncertaintyDataLoaded,
-    rainfallSampleValues: asciiGrid ? Object.values(asciiGrid.values).slice(0, 10) : [],
-    uncertaintySampleValues: uncertaintyGrid ? Object.values(uncertaintyGrid.values).slice(0, 10) : [],
-  });
-
   const ranges_IN: [number, number][] = [
     [0.8, 32.2],
     [0.4, 26.4],
@@ -489,19 +479,19 @@ const RainfallMap = () => {
   ];
 
   const ranges_MM: [number, number][] = [
-    [21, 818],
-    [11, 669],
-    [16, 1323],
-    [7, 978],
-    [2, 777],
-    [0, 833],
-    [0, 984],
-    [1, 881],
-    [1, 764],
-    [8, 973],
-    [19, 980],
-    [14, 921],
-    [204, 10271]
+    [21, 818],       // January
+    [11, 669],       // February 
+    [16, 1323],      // March
+    [7, 978],        // April
+    [2, 777],        // May
+    [0, 833],        // June
+    [0, 984],        // July 
+    [1, 881],        // August
+    [1, 764],        // September
+    [8, 973],        // October
+    [19, 980],       // November
+    [14, 921],       // December
+    [204, 10271]     // Annual
   ];
 
   const uncertainty_ranges_IN: [number, number][] = [
@@ -517,7 +507,7 @@ const RainfallMap = () => {
     [0, 5],    // October
     [0, 5],    // November
     [0, 5],    // December
-    [0, 10]    // Annual
+    [0, 10]     // Annual
   ];
 
   const uncertainty_ranges_MM: [number, number][] = [
@@ -536,105 +526,47 @@ const RainfallMap = () => {
     [0, 254]    // Annual
   ];
 
-  // LayerController: directly manage a single Leaflet raster layer instance on the map.
-  // This avoids stale layers left by component unmount/re-mount timing and ensures
-  // only one raster (rainfall OR uncertainty) is present at a time.
-  const LayerController = ({
-    asciiGrid,
-    uncertaintyGrid,
-    showGrids,
-    showUncertainty,
-    selectedUnits,
-    selectedPeriod,
-  }: {
-    asciiGrid?: AsciiGrid | undefined,
-    uncertaintyGrid?: AsciiGrid | undefined,
-    showGrids: boolean,
-    showUncertainty: boolean,
-    selectedUnits: Units,
-    selectedPeriod: Period,
-  }) => {
-    const map = useMap();
-    const currentLayerRef = useRef<any | null>(null);
+  // Memoize rainfall layer
+  const rainfallLayer = useMemo(() => {
+    if (!showGrids || showUncertainty || !asciiGrid) return null;
+    
+    const range = selectedUnits === Units.IN ? ranges_IN[selectedPeriod] : ranges_MM[selectedPeriod];
+    
+    return (
+      <RainfallColorLayer
+        key={`rainfall-layer-${selectedUnits}-${selectedPeriod}`}
+        options={{
+          cacheEmpty: true,
+          colorScale: {
+            colors: [],
+            range,
+          },
+          asciiGrid,
+        }}
+      />
+    );
+  }, [showGrids, showUncertainty, asciiGrid, selectedUnits, selectedPeriod]);
 
-    useEffect(() => {
-      // Instrument: log existing layers before any changes
-      try {
-        console.log('[LayerController] start - map layer count', Object.keys((map as any)._layers || {}).length);
-      } catch (e) { /* ignore */ }
-
-      // Remove any previous layer (ensure full cleanup)
-      if (currentLayerRef.current) {
-        try {
-          console.log('[LayerController] removing previous layer, map.hasLayer=', map.hasLayer(currentLayerRef.current));
-          // attempt to clear any tile caches on the raster layer
-          try { (currentLayerRef.current as any).clearEmptyTileCache?.(); } catch (e) { /* ignore */ }
-          try { (currentLayerRef.current as any).options && ((currentLayerRef.current as any).options.asciiGrid = null); } catch (e) { /* ignore */ }
-          if (map.hasLayer(currentLayerRef.current)) {
-            map.removeLayer(currentLayerRef.current);
-          }
-        } catch (e) { /* ignore */ }
-        currentLayerRef.current = null;
-        try {
-          console.log('[LayerController] after removal - map layer count', Object.keys((map as any)._layers || {}).length);
-        } catch (e) { /* ignore */ }
-      }
-
-      // Decide which grid to show
-      const grid = showUncertainty ? uncertaintyGrid : (showGrids ? asciiGrid : undefined);
-      if (!grid) return;
-
-      // Build options matching the RasterLayer constructor
-      const range = showUncertainty
-        ? (selectedUnits === Units.IN ? uncertainty_ranges_IN[selectedPeriod] : uncertainty_ranges_MM[selectedPeriod])
-        : (selectedUnits === Units.IN ? ranges_IN[selectedPeriod] : ranges_MM[selectedPeriod]);
-
-      const options = {
-        cacheEmpty: true,
-        colorScale: {
-          colors: [],
-          range,
-        },
-        asciiGrid: grid,
-      } as any;
-
-      // Create the raster layer via the appropriate factory
-      const rasterLayer = showUncertainty 
-        ? (L as any).gridLayer.UncertaintyRasterLayer(options)
-        : (L as any).gridLayer.RainfallRasterLayer(options);
-      currentLayerRef.current = rasterLayer;
-
-      // Add to map and ensure it is above basemap
-      console.log('[LayerController] adding layer (type=' + (showUncertainty ? 'UNCERTAINTY' : 'RAINFALL') + ') range=' + JSON.stringify(range));
-      map.addLayer(rasterLayer);
-      try {
-        console.log('[LayerController] added - map.hasLayer=', map.hasLayer(rasterLayer), 'layer count', Object.keys((map as any)._layers || {}).length);
-      } catch (e) { /* ignore */ }
-
-      setTimeout(() => {
-        try { rasterLayer.bringToFront(); } catch (e) { /* ignore */ }
-      }, 0);
-
-      return () => {
-        try {
-          console.log('[LayerController] cleanup - before removal, map layer count', Object.keys((map as any)._layers || {}).length, 'hasLayer=', currentLayerRef.current ? map.hasLayer(currentLayerRef.current) : false);
-        } catch (e) { /* ignore */ }
-        if (currentLayerRef.current) {
-          try { (currentLayerRef.current as any).clearEmptyTileCache?.(); } catch (e) { /* ignore */ }
-          try { (currentLayerRef.current as any).options && ((currentLayerRef.current as any).options.asciiGrid = null); } catch (e) { /* ignore */ }
-          try {
-            if (map.hasLayer(currentLayerRef.current)) map.removeLayer(currentLayerRef.current);
-          } catch (e) { /* ignore */ }
-        }
-        currentLayerRef.current = null;
-        try {
-          console.log('[LayerController] cleanup - after removal, map layer count', Object.keys((map as any)._layers || {}).length);
-        } catch (e) { /* ignore */ }
-      };
-    }, [asciiGrid, uncertaintyGrid, showGrids, showUncertainty, selectedUnits, selectedPeriod, map]);
-
-    return null;
-  };
+  // Memoize uncertainty layer
+  const uncertaintyLayer = useMemo(() => {
+    if (!showUncertainty || !uncertaintyGrid) return null;
+    
+    const range = selectedUnits === Units.IN ? uncertainty_ranges_IN[selectedPeriod] : uncertainty_ranges_MM[selectedPeriod];
+    
+    return (
+      <UncertaintyColorLayer
+        key={`uncertainty-layer-${selectedUnits}-${selectedPeriod}`}
+        options={{
+          cacheEmpty: true,
+          colorScale: {
+            colors: [],
+            range,
+          },
+          asciiGrid: uncertaintyGrid,
+        }}
+      />
+    );
+  }, [showGrids, showUncertainty, uncertaintyGrid, selectedUnits, selectedPeriod]);
 
   const rfStationIcons = useMemo(() => {
     return rfStations ? (
@@ -689,13 +621,6 @@ const RainfallMap = () => {
     ? (selectedUnits === Units.IN ? uncertainty_ranges_IN : uncertainty_ranges_MM)
     : (selectedUnits === Units.IN ? ranges_IN : ranges_MM);
 
-  console.log('Rendering:', {
-    showGrids,
-    showUncertainty,
-    willRenderRainfall: showGrids && !showUncertainty,
-    willRenderUncertainty: showUncertainty && !showGrids,
-  });
-
   return (
     <div className="flex w-full h-full max-h-full">
       <SideBar
@@ -727,24 +652,9 @@ const RainfallMap = () => {
             maxZoom={tileLayerProps.maxZoom ?? 13}
           />
 
-          {(() => {
-            console.log('About to render layers:', {
-              showGrids,
-              showUncertainty,
-              condition1: showGrids && !showUncertainty,
-              condition2: showUncertainty && !showGrids,
-            });
-            return null;
-          })()}
-
-          <LayerController
-            asciiGrid={asciiGrid}
-            uncertaintyGrid={uncertaintyGrid}
-            showGrids={showGrids}
-            showUncertainty={showUncertainty}
-            selectedUnits={selectedUnits}
-            selectedPeriod={selectedPeriod}
-          />
+          {/* Render either rainfall or uncertainty layer (mutually exclusive) */}
+          {rainfallLayer}
+          {uncertaintyLayer}
 
           {rfStationIcons}
 

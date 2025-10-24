@@ -216,14 +216,12 @@ R.gridLayer.UncertaintyRasterLayer = function (options: RasterOptions) {
 };
 
 const createUncertaintyComponent = (props: any, context: any) => {
-  console.log('[UncertaintyColorLayer] Creating component');
   let rasterLayer = R.gridLayer.UncertaintyRasterLayer(props.options);
 
   /* Prevents selected basemap from overlapping the raster layer
   setTimeout here allows bringToFront() to run after re-renders are done */
   setTimeout(() => {
     if (context.map.hasLayer(rasterLayer)) {
-      console.log("[UncertaintyColorLayer] Bringing to front");
       rasterLayer.bringToFront();
     }
   }, 0);

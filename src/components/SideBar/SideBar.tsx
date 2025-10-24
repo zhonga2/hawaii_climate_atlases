@@ -141,7 +141,7 @@ const SideBar: React.FC<{
         <div className="overflow-y-auto px-4 pt-0 mt-0">
           <Accordion
             isCompact
-            defaultExpandedKeys={["rainfall-data", "station-information", "legend"]}
+            defaultExpandedKeys={["rainfall-chart", "rainfall-data", "station-information", "legend"]}
             variant="light"
             selectionMode="multiple"
           >

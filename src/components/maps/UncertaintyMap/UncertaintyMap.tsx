@@ -199,8 +199,7 @@ const UncertaintyMap = () => {
         }}
       />
     ) : null;
-    // eslint-disable-next-line
-  }, [asciiGrid]);
+  }, [asciiGrid, selectedUnits, selectedPeriod]);
 
  
   if (!allDataLoaded) {

@@ -172,14 +172,12 @@ R.gridLayer.RainfallRasterLayer = function (options: RasterOptions) {
 };
 
 const createRainfallComponent = (props: any, context: any) => {
-  console.log('[RainfallColorLayer] Creating component');
-  let rasterLayer = R.gridLayer.RainfallRasterLayer(props.options);
+    let rasterLayer = R.gridLayer.RainfallRasterLayer(props.options);
 
   /* Prevents selected basemap from overlapping the raster layer
   setTimeout here allows bringToFront() to run after re-renders are done */
   setTimeout(() => {
     if (context.map.hasLayer(rasterLayer)) {
-      console.log("[RainfallColorLayer] Bringing to front");
       rasterLayer.bringToFront();
     }
   }, 0);
