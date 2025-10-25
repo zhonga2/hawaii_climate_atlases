@@ -239,9 +239,11 @@ const MapOverlay: React.FC<Props> = (
       const zoom = map.getZoom();
       return (
         <MapContainer
-          style={{ width: 320, height: 180 }}
+          style={{ width: 272, height: 153 }}
+          //style={{ width: 320, height: 180 }}
           center={map.getCenter()}
-          zoom={zoom - (0.75 * 3)}
+          zoom={zoom - (0.60 * 3)}
+          //zoom={zoom - (0.75 * 3)}
           dragging={false}
           doubleClickZoom={false}
           scrollWheelZoom={false}
