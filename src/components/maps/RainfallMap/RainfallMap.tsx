@@ -495,35 +495,35 @@ const RainfallMap = () => {
   ];
 
   const uncertainty_ranges_IN: [number, number][] = [
-    [0, 5],    // January
-    [0, 5],    // February
-    [0, 5],    // March
-    [0, 5],    // April
-    [0, 5],    // May
-    [0, 5],    // June
-    [0, 5],    // July
-    [0, 5],    // August
-    [0, 5],    // September
-    [0, 5],    // October
-    [0, 5],    // November
-    [0, 5],    // December
-    [0, 10]     // Annual
+    [0.0005019, 3.354232],    // January
+    [0.0014641, 2.839714],    // February
+    [0.0009792, 4.090142],    // March
+    [0.0001895, 11.3037],     // April
+    [0.0007213, 2.740073],    // May
+    [0.0008297, 3.273416],    // June
+    [0.0001819, 3.422752],    // July
+    [0.00446305, 3.086848],   // August
+    [0.0007306, 2.773549],    // September
+    [0.0011364, 2.597468],    // October
+    [0.004848769, 3.840706],  // November
+    [0.001260578, 3.433185],  // December
+    [0.05284176, 11.87222]    // Annual
   ];
 
   const uncertainty_ranges_MM: [number, number][] = [
-    [0, 127],   // January
-    [0, 127],   // February
-    [0, 127],   // March
-    [0, 127],   // April
-    [0, 127],   // May
-    [0, 127],   // June
-    [0, 127],   // July
-    [0, 127],   // August
-    [0, 127],   // September
-    [0, 127],   // October
-    [0, 127],   // November
-    [0, 127],   // December
-    [0, 254]    // Annual
+    [0.01274, 85.18],     // January
+    [0.0371, 72.09],      // February
+    [0.0248, 103.89],     // March
+    [0.0048, 287.11],     // April
+    [0.0183, 69.58],      // May
+    [0.0210, 83.14],      // June
+    [0.0046, 86.98],      // July
+    [0.1134, 78.41],      // August
+    [0.0185, 70.47],      // September
+    [0.0289, 65.92],      // October
+    [0.1232, 97.51],      // November
+    [0.0320, 87.18],      // December
+    [1.3422, 301.5]       // Annual
   ];
 
   // Memoize rainfall layer
@@ -633,7 +633,7 @@ const RainfallMap = () => {
         selectedGridIndex={selectedGridIndex}
         location={location}
         range={activeRanges[selectedPeriod]}
-        units={selectedUnits == Units.IN ? 'in' : 'mm'}
+        units={showUncertainty ? (selectedUnits == Units.IN ? 'in²' : 'mm²') : (selectedUnits == Units.IN ? 'in' : 'mm')}
       />
       <div className="w-full h-full">
         <Map

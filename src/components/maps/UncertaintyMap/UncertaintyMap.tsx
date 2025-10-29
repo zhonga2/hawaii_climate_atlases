@@ -155,34 +155,34 @@ const UncertaintyMap = () => {
   } = useAllUncertaintyGrids(selectedUnits);
 
   const ranges_IN: [number, number][] = [
-    [0.8, 32.2],
-    [0.4, 26.4],
-    [0.6, 51.9],
-    [0.3, 38.5],
-    [0.1, 30.7],
-    [0, 32.8],
-    [0, 38.7],
-    [0, 34.7],
-    [0, 30.1],
-    [0.3, 38.3],
-    [0.7, 38.6],
-    [0.6, 36.4],
-    [8, 404.4]
+    [0.0005019, 3.354232],    // January
+    [0.0014641, 2.839714],    // February
+    [0.0009792, 4.090142],    // March
+    [0.0001895, 11.3037],     // April
+    [0.0007213, 2.740073],    // May
+    [0.0008297, 3.273416],    // June
+    [0.0001819, 3.422752],    // July
+    [0.00446305, 3.086848],   // August
+    [0.0007306, 2.773549],    // September
+    [0.0011364, 2.597468],    // October
+    [0.004848769, 3.840706],  // November
+    [0.001260578, 3.433185],  // December
+    [0.05284176, 11.87222]    // Annual
   ];
   const ranges_MM: [number, number][] = [
-    [21, 818],
-    [11, 669],
-    [16, 1323],
-    [7, 978],
-    [2, 777],
-    [0, 833],
-    [0, 984],
-    [1, 881],
-    [1, 764],
-    [8, 973],
-    [19, 980],
-    [14, 921],
-    [204, 10271]
+    [0.01274, 85.18],     // January
+    [0.0371, 72.09],      // February
+    [0.0248, 103.89],     // March
+    [0.0048, 287.11],     // April
+    [0.0183, 69.58],      // May
+    [0.0210, 83.14],      // June
+    [0.0046, 86.98],      // July
+    [0.1134, 78.41],      // August
+    [0.0185, 70.47],      // September
+    [0.0289, 65.92],      // October
+    [0.1232, 97.51],      // November
+    [0.0320, 87.18],      // December
+    [1.3422, 301.5]       // Annual
   ];
 
   const colorLayer = useMemo(() => {
@@ -222,7 +222,7 @@ const UncertaintyMap = () => {
         selectedGridIndex={selectedGridIndex}
         location={location}
         range={selectedUnits == Units.IN ? ranges_IN[selectedPeriod] : ranges_MM[selectedPeriod]}
-        units={selectedUnits == Units.IN ? 'in' : 'mm'}
+        units={selectedUnits == Units.IN ? 'in²' : 'mm²'}
       />
       <div className="w-full h-full">
         <Map

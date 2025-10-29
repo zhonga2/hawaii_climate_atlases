@@ -275,7 +275,9 @@ const SideBar: React.FC<{
                       <div
                         className="w-[30px] h-[75px]"
                         style={{
-                          background: 'linear-gradient(to bottom, indigo, purple, blue, green, yellow, red)'
+                          background: units.includes('²')
+                            ? 'linear-gradient(to bottom, #fee5d9, #fcbba1, #fc9272, #fb6a4a, #de2d26, #a50f15)'
+                            : 'linear-gradient(to bottom, indigo, purple, blue, green, yellow, red)'
                         }}
                       />
                       <div className="ml-[10px]">
