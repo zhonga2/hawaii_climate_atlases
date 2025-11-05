@@ -6,6 +6,7 @@ import { Station, Units, Period, AsciiGrid } from "@/lib";
 import { StationIcon } from "@/components/maps/Map";
 import { LatLng } from "leaflet";
 import { Button } from '@heroui/button';
+import { UncertaintyHistogram } from '@/components/Plot';
 
 const fullPeriods = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December', 'Annual'];
 const periods = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Ann'];
@@ -124,10 +125,25 @@ const SideBar: React.FC<{
           <div className="overflow-y-auto px-4 pt-0 mt-0">
             <Accordion
               isCompact
-              defaultExpandedKeys={["rainfall-chart", "rainfall-data", "station-information", "legend"]}
+              defaultExpandedKeys={["uncertainty-chart", "rainfall-chart", "rainfall-data", "station-information", "legend"]}
               variant="light"
               selectionMode="multiple"
             >
+              <AccordionItem
+                key="uncertainty-chart"
+                aria-label="uncertainty-chart"
+                title={'Uncertainty Chart'}
+                classNames={{ title: "font-extrabold text-gray-600", trigger: "" }}
+              >
+                <div className="h-[300px] shrink-0">
+                  <UncertaintyHistogram
+                    data={stationUncertainty.slice(0, -1)} // First 12 months (excluding annual)
+                    units={selectedUnits === Units.IN ? 'in²' : 'mm²'}
+                    title="Monthly Station Uncertainty"
+                  />
+                </div>
+              </AccordionItem>
+
               <AccordionItem
                 key="rainfall-chart"
                 aria-label="rainfall-chart"
